@@ -7,7 +7,7 @@
     "dev": "nodemon src/index.ts",
     "start": "yarn run build && node dist/lib/index.js",
     "build": "rimraf dist && tsc",
-    "lint": "eslint ./src ./test --ext .ts",
+    "lint": "eslint ./src --ext .ts",
     "lint:fix": "eslint --fix ./src --ext .ts"
   },
   "repository": {
