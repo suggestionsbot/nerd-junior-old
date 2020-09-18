@@ -88,13 +88,10 @@ export const queueAllPendingRemovals = async (redis: RedisClient, client: Client
     const allCachedRemovals = await asyncRedisFunctions(redis).keysAsync('boosters:*');
     if (allCachedRemovals.length > 0) {
       const members = allCachedRemovals.map(key => key.split(':')[1]);
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
       for (const key of members) {
         const data = await asyncRedisFunctions(redis).getAsync(REDIS_KEY(key)).then(d => {
           if (d) return JSON.parse(d) as MemberData;
         });
-        // console.log('queueAllPendingPunishments', key, data);
         client.pendingRemovals.set(key, data);
       }
       if (client.pendingRemovals.size > 0) console.log(`"${client.pendingRemovals.size}" member(s) set to be kicked from the development server...`);
