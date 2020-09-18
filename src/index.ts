@@ -19,7 +19,7 @@ import { MemberData } from './types';
 import {
   BOOSTER_ROLE, BOOSTERS_CHANNEL,
   COLORS,
-  DA_NERDS_DEV, DEFAULT_TIME, DEV_GUILD,
+  DA_NERDS_DEV, DA_NERDS_STAFF, DEFAULT_TIME, DEV_GUILD,
   MAIN_GUILD,
   MAIN_GUILD_INVITE, MINIMUM_PERMISSIONS, OWNER, PERMISSIONS,
   REDIS_KEY,
@@ -220,7 +220,10 @@ client.on('guildMemberAdd', async member => {
     }
 
     const memberRole = member.guild.roles.cache.get(DA_NERDS_DEV);
-    await member.roles.add(memberRole);
+    const staffRole = member.guild.roles.cache.get(DA_NERDS_STAFF);
+    const rolesToAdd = [memberRole];
+    if (isInATrustedRole) rolesToAdd.push(staffRole);
+    await member.roles.add(rolesToAdd);
   } catch (error) {
     console.error(error);
   }
