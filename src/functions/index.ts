@@ -94,7 +94,7 @@ export const queueAllPendingRemovals = async (redis: RedisClient, client: Client
         });
         client.pendingRemovals.set(key, data);
       }
-      if (client.pendingRemovals.size > 0) console.log(`"${client.pendingRemovals.size}" member(s) set to be kicked from the development server...`);
+      console.log(`"${client.pendingRemovals.size}" member(s) set to be kicked from the development server...`);
     } else {
       console.log('No pending removals in the cache...');
     }
