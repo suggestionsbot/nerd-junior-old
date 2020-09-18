@@ -2,7 +2,6 @@ import { Client } from 'discord.js';
 import * as dotenv from 'dotenv-flow';
 dotenv.config();
 
-
 const client = new Client({ disableMentions: 'everyone' });
 
 client.on('ready', () => console.log('Ready to go!'));
