@@ -1,4 +1,4 @@
-import { Client, TextChannel } from 'discord.js';
+import { Client, GuildMember, TextChannel } from 'discord.js';
 import { inspect } from 'util';
 import { createClient } from 'redis';
 import { stripIndents } from 'common-tags';
@@ -21,8 +21,8 @@ import {
   COLORS,
   DA_NERDS_DEV, DEFAULT_TIME, DEV_GUILD,
   MAIN_GUILD,
-  MAIN_GUILD_INVITE, MINIMUM_PERMISSIONS, OWNER, PERMISSIONS,
-  REDIS_KEY,
+  MAIN_GUILD_INVITE, MINIMUM_PERMISSIONS, NO_LONGER_SUPPORTER, OWNER, PERMISSIONS,
+  REDIS_KEY, SUPPORTER_ROLE,
   TRUSTED_ROLES_MAIN
 } from './config';
 
@@ -33,7 +33,6 @@ const redis = createClient({
 });
 
 const client = new Client({ disableMentions: 'everyone' });
-
 
 client.on('ready', async () => {
   try {
@@ -111,15 +110,22 @@ client.on('message', async message => {
         return errorMessage(message.channel as TextChannel, `${args[0]} is not a valid user!`);
 
       const [devGuild, boosterGuild] = [DEV_GUILD, MAIN_GUILD].map(g => client.guilds.cache.get(g));
-      const boosterRole = boosterGuild.roles.cache.get(BOOSTER_ROLE);
       const devGuildMemberRole = devGuild.roles.cache.get(DA_NERDS_DEV);
 
       try {
         const boosterMember = await boosterGuild.members.fetch(updateUser.id);
         const devGuildMember = await devGuild.members.fetch(updateUser.id);
-        const hasBoosterRole = boosterMember.roles.cache.has(boosterRole.id);
+        const [hasBoosterRole, hasSupporterRole] = [BOOSTER_ROLE, SUPPORTER_ROLE].map(id => boosterMember.roles.cache.has(id));
         const hasDevGuildMemberRole = devGuildMember.roles.cache.has(devGuildMemberRole.id);
         const isInATrustedRole = boosterMember.roles.cache.some(r => TRUSTED_ROLES_MAIN.includes(r.id));
+
+        // This is for if the member is no longer a supporter, but checks if they have the member role or not in the dev server
+        if ((!hasBoosterRole && !isInATrustedRole && !hasSupporterRole) || (!hasBoosterRole && !isInATrustedRole && !hasSupporterRole && !hasDevGuildMemberRole)) {
+          await boosterMember.send({ embed: NO_LONGER_SUPPORTER(boosterMember, boosterGuild, devGuild) });
+          await boosterMember.kick(`Removed from the Supporter role in ${boosterGuild}`);
+          console.log(`Successfully kicked ${boosterMember.user.tag} (${boosterMember.id}) from ${devGuild} (${devGuild.id})`);
+          return;
+        }
 
         // This is for if the member is no longer a booster, but checks if they have the member role or not in the dev server
         if ((!hasBoosterRole && !isInATrustedRole && hasDevGuildMemberRole) || (!hasBoosterRole && !isInATrustedRole && !hasDevGuildMemberRole)) {
@@ -156,15 +162,14 @@ client.on('message', async message => {
           return successMessage(message.channel as TextChannel, `**${updateUser.tag}** has been successfully removed from **${devGuild.name}** by **${message.author.tag}** \`[${message.author.id}]\``);
         }
 
-        // This is for if the member is a booster, but doesn't have the member role in the dev server
-        if ((hasBoosterRole || isInATrustedRole) && !hasDevGuildMemberRole) {
-
+        // This is for if the member is a booster or supporter, but doesn't have the member role in the dev server
+        if ((hasBoosterRole || hasSupporterRole || isInATrustedRole) && !hasDevGuildMemberRole) {
           await devGuildMember.roles.add(devGuildMemberRole, `Force-update by ${message.author.tag} [${message.author.id}]`);
           return successMessage(message.channel as TextChannel, `**${updateUser.tag}** has been added to the **${devGuildMemberRole.name}** role in **${devGuild}** by **${message.author.tag}** \`[(${message.author.id})]\``);
         }
 
-        // This is for if the member is a booster and has the member role in the dev server
-        if ((hasBoosterRole || isInATrustedRole) && hasDevGuildMemberRole)
+        // This is for if the member is a booster or supporter and has the member role in the dev server
+        if ((hasBoosterRole || hasSupporterRole || isInATrustedRole) && hasDevGuildMemberRole)
           return errorMessage(message.channel as TextChannel, `**${updateUser.tag}** is already authorized in **${devGuild.name}**.`);
       } catch (error) {
         if (error.message === 'Unknown Member')
@@ -186,15 +191,14 @@ client.on('guildMemberAdd', async member => {
   try {
     const boosterGuild = client.guilds.cache.get(MAIN_GUILD);
     const boosterMember = await boosterGuild.members.fetch(member.id);
-    const boosterRole = boosterGuild.roles.cache.get(BOOSTER_ROLE);
-    const hasBoosterRole = boosterMember.roles.cache.has(boosterRole.id);
+    const [hasBoosterRole, hasSupporterRole] = [BOOSTER_ROLE, SUPPORTER_ROLE].map(id => boosterMember.roles.cache.has(id));
     const isInATrustedRole = boosterMember.roles.cache.some(r => TRUSTED_ROLES_MAIN.includes(r.id));
 
     // We only want the code below to apply in Suggestions Development
     if (member.guild.id === MAIN_GUILD) return;
     if (member.user.bot) return;
 
-    if (!hasBoosterRole && !isInATrustedRole) {
+    if (!hasBoosterRole && !hasSupporterRole && !isInATrustedRole) {
       if (member.kickable) {
         await member.send({
           embed: {
@@ -203,7 +207,7 @@ client.on('guildMemberAdd', async member => {
               url: member.user.avatarURL()
             },
             description: stripIndents`
-              You do not have the Nitro Booster role in **${boosterGuild}** or you're not in a trusted role.
+              You do not have the Nitro Booster role or Supporter role in **${boosterGuild}** or you're not in a trusted role.
               
               To gain access to this server, you must be a booster in **${boosterGuild}** \`[${boosterGuild.id}]\`.
               **Invite:** ${MAIN_GUILD_INVITE}
@@ -214,7 +218,7 @@ client.on('guildMemberAdd', async member => {
             timestamp: new Date()
           }
         });
-        await member.kick(`Not a Nitro Booster in ${boosterGuild}`);
+        await member.kick(`Not a Nitro Booster, Supporter or trusted member in ${boosterGuild}`);
         return;
       }
     }
@@ -226,13 +230,13 @@ client.on('guildMemberAdd', async member => {
 });
 
 client.on('guildMemberUpdate', async (oldMember, newMember) => {
-  const boosterGuild = client.guilds.cache.get(MAIN_GUILD);
-  const devGuild = client.guilds.cache.get(DEV_GUILD);
-  const oldBoosterMember = oldMember.partial ? await boosterGuild.members.fetch(oldMember.id) : oldMember;
-  const newBoosterMember = newMember.partial ? await boosterGuild.members.fetch(newMember.id) : newMember;
-  const boosterRole = boosterGuild.roles.cache.get(BOOSTER_ROLE);
-  const newHasBoosterRole = newBoosterMember.roles.cache.has(boosterRole.id);
-  const oldHasBoosterRole = oldBoosterMember.roles.cache.has(boosterRole.id);
+  const [boosterGuild, devGuild] = [MAIN_GUILD, DEV_GUILD].map(id => client.guilds.cache.get(id));
+  const oldBoosterMember = oldMember.partial ? await boosterGuild.members.fetch(oldMember.id) : <GuildMember>oldMember;
+  const newBoosterMember = newMember.partial ? await boosterGuild.members.fetch(newMember.id) : <GuildMember>newMember;
+  const [newHasBoosterRole, newHasSupporterRole] = [BOOSTER_ROLE, SUPPORTER_ROLE]
+    .map(id => newBoosterMember.roles.cache.has(id));
+  const [oldHasBoosterRole, oldHasSupporterRole] = [BOOSTER_ROLE, SUPPORTER_ROLE]
+    .map(id => oldBoosterMember.roles.cache.has(id));
   const isInATrustedRole = newBoosterMember.roles.cache.some(r => TRUSTED_ROLES_MAIN.includes(r.id));
 
   if (isInATrustedRole) return;
@@ -287,6 +291,16 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
 
     await asyncRedisFunctions(redis).delAsync(REDIS_KEY(newBoosterMember));
     client.pendingRemovals.delete(newBoosterMember.id);
+  }
+
+  if (oldHasSupporterRole && !newHasSupporterRole && !oldHasBoosterRole && !newHasBoosterRole) {
+    try {
+      await newBoosterMember.send({ embed: NO_LONGER_SUPPORTER(newBoosterMember, boosterGuild, devGuild) });
+      await newBoosterMember.kick(`Removed from the Supporter role in ${boosterGuild}`);
+      console.log(`Successfully kicked ${newBoosterMember.user.tag} (${newBoosterMember.id}) from ${devGuild} (${devGuild.id})`);
+    } catch (error) {
+      if (error.message === 'Unknown Member') return;
+    }
   }
 });
 

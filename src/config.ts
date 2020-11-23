@@ -1,4 +1,5 @@
-import { GuildMember, PartialGuildMember } from 'discord.js';
+import { Guild, GuildMember, PartialGuildMember } from 'discord.js';
+import { stripIndents } from 'common-tags';
 
 export const PERMISSIONS = {
   'ADMINISTRATOR': 'Administrator',
@@ -53,8 +54,26 @@ export const DEV_GUILD = '737166408525283348'; // Suggestions Development
 export const BOOSTERS_CHANNEL = '737546937884213299';
 
 export const BOOSTER_ROLE = '703785795483336766';
+export const SUPPORTER_ROLE = '780511444810596362';
 export const DA_NERDS_DEV = '737533643353751616';
 // Developer, Staff Team, Support Team, Trusted
 export const TRUSTED_ROLES_MAIN = ['601235098012090378', '602552757634859008', '605266299345698846', '629883041946533893'];
 export const DEFAULT_TIME = '24h';
 export const CRON_TIMER = '*/1 * * * *';
+
+export const NO_LONGER_SUPPORTER = (member: GuildMember, mainGuild: Guild, devGuild: Guild): Record<string, unknown> => {
+  return {
+    author: {
+      name: member.user.tag,
+      url: member.user.avatarURL()
+    },
+    description: stripIndents`
+          You have been kicked from **${devGuild}** \`[${devGuild.id}]\` due to your removal from the Supporter role in **${mainGuild}** \`[${mainGuild.id}]\`.
+            
+          (If you believe this is a mistake, please contact a member of the support team)
+        `,
+    color: COLORS.MAIN,
+    footer: { text: `ID: ${member.id}` },
+    timestamp: Date.now()
+  };
+};
