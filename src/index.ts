@@ -240,7 +240,7 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
 
   if (isInATrustedRole) return;
   // Delays the code below from executing when a new member joins because it'll try to execute the rest of the code
-  if (newBoosterMember.joinedTimestamp > (newBoosterMember.joinedTimestamp + (10 * 10000))) return;
+  if (newBoosterMember.joinedTimestamp > (newBoosterMember.joinedTimestamp + (10 * 1000))) return;
   if (newBoosterMember.user.bot) return;
 
   if (oldHasBoosterRole && !newHasBoosterRole) {
