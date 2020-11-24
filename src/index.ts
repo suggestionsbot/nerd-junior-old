@@ -2,7 +2,6 @@ import { Client, GuildMember, TextChannel } from 'discord.js';
 import { inspect } from 'util';
 import { createClient } from 'redis';
 import { stripIndents } from 'common-tags';
-import ms from 'ms';
 
 import dotenv from 'dotenv-flow';
 dotenv.config();
@@ -241,7 +240,7 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
 
   if (isInATrustedRole) return;
   // Delays the code below from executing when a new member joins because it'll try to execute the rest of the code
-  if (newBoosterMember.joinedTimestamp > (newBoosterMember.joinedTimestamp + ms('10s'))) return;
+  if (newBoosterMember.joinedTimestamp > (newBoosterMember.joinedTimestamp + (10 * 10000))) return;
   if (newBoosterMember.user.bot) return;
 
   if (oldHasBoosterRole && !newHasBoosterRole) {
@@ -263,7 +262,7 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
         }
       });
 
-      const data: MemberData = { expires: Date.now() + ms(DEFAULT_TIME) };
+      const data: MemberData = { expires: Date.now() + DEFAULT_TIME };
       await asyncRedisFunctions(redis).setAsync(REDIS_KEY(newBoosterMember), JSON.stringify(data));
       client.pendingRemovals.set(newBoosterMember.id, data);
     } catch (error) {

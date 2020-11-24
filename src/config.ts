@@ -58,7 +58,7 @@ export const SUPPORTER_ROLE = '780511444810596362';
 export const DA_NERDS_DEV = '737533643353751616';
 // Developer, Staff Team, Support Team, Trusted
 export const TRUSTED_ROLES_MAIN = ['601235098012090378', '602552757634859008', '605266299345698846', '629883041946533893'];
-export const DEFAULT_TIME = '24h';
+export const DEFAULT_TIME = 1000 * 60 * 60 * 24; // 24 hours
 export const CRON_TIMER = '*/1 * * * *';
 
 export const NO_LONGER_SUPPORTER = (member: GuildMember, mainGuild: Guild, devGuild: Guild): Record<string, unknown> => {
