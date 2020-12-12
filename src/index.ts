@@ -189,15 +189,16 @@ client.on('message', async message => {
 client.on('guildMemberAdd', async member => {
   try {
     const boosterGuild = client.guilds.cache.get(MAIN_GUILD);
-    const boosterMember = await boosterGuild.members.fetch(member.id);
+    const boosterMember = boosterGuild.members.cache.get(member.id) ?? await boosterGuild.members.fetch(member.id);
     const [hasBoosterRole, hasSupporterRole] = [BOOSTER_ROLE, SUPPORTER_ROLE].map(id => boosterMember.roles.cache.has(id));
     const isInATrustedRole = boosterMember.roles.cache.some(r => TRUSTED_ROLES_MAIN.includes(r.id));
 
     // We only want the code below to apply in Suggestions Development
     if (member.guild.id === MAIN_GUILD) return;
     if (member.user.bot) return;
+    if (isInATrustedRole) return await member.roles.add(DA_NERDS_DEV).catch(console.error);
 
-    if (!hasBoosterRole && !hasSupporterRole && !isInATrustedRole) {
+    if (!hasBoosterRole || !hasSupporterRole) {
       if (member.kickable) {
         await member.send({
           embed: {
@@ -222,7 +223,6 @@ client.on('guildMemberAdd', async member => {
       }
     }
 
-    await member.roles.add(DA_NERDS_DEV);
   } catch (error) {
     console.error(error);
   }
