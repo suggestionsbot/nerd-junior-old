@@ -1,7 +1,7 @@
 import { Client, GuildMember, TextChannel } from 'discord.js';
 import { inspect } from 'util';
 import { createClient } from 'redis';
-import { stripIndents } from 'common-tags';
+import { oneLine, stripIndents } from 'common-tags';
 
 import dotenv from 'dotenv-flow';
 dotenv.config();
@@ -64,7 +64,8 @@ client.on('message', async message => {
   const missingPermissions = (message.channel as TextChannel).permissionsFor(client.user).missing(MINIMUM_PERMISSIONS);
   if (missingPermissions.length > 0) {
     return message.channel.send(stripIndents`I am missing these permissions in the ${message.channel} channel! Make sure I have them: 
-      ${missingPermissions.length > 1 ? missingPermissions.map(p => `\`${PERMISSIONS[p]}\``).join(', ') : `\`${PERMISSIONS[missingPermissions[0]]}\``}
+      ${missingPermissions.length > 1 ? missingPermissions.map(p => `\`${PERMISSIONS[p]}\``).join(', ') : 
+    `\`${PERMISSIONS[missingPermissions[0]]}\``}
     `);
   }
 
@@ -100,13 +101,14 @@ client.on('message', async message => {
     }
     // In the event of a bot restart or crash, this command allows to force update the status of a user
     case 'forceupdate': {
-      const updateUser = message.mentions.users.first() || await client.users.cache.get(args[0].trim());
+      const updateUser = message.mentions.users.first() || (client.users.cache.get(args[0]?.trim() ?? null) ??
+          await client.users.fetch(args[0]?.trim() ?? null));
 
-      if (!args[0])
+      if (!updateUser && !args[0]?.trim())
         return errorMessage(message.channel as TextChannel, 'Please provide a user to forcefully update.');
 
-      if(!updateUser)
-        return errorMessage(message.channel as TextChannel, `${args[0]} is not a valid user!`);
+      if (!updateUser)
+        return errorMessage(message.channel as TextChannel, `\`${args[0]}\` is not a valid user!`);
 
       const [devGuild, boosterGuild] = [DEV_GUILD, MAIN_GUILD].map(g => client.guilds.cache.get(g));
       const devGuildMemberRole = devGuild.roles.cache.get(DA_NERDS_DEV);
@@ -119,15 +121,21 @@ client.on('message', async message => {
         const isInATrustedRole = boosterMember.roles.cache.some(r => TRUSTED_ROLES_MAIN.includes(r.id));
 
         // This is for if the member is no longer a supporter, but checks if they have the member role or not in the dev server
-        if ((!hasBoosterRole && !isInATrustedRole && !hasSupporterRole) || (!hasBoosterRole && !isInATrustedRole && !hasSupporterRole && !hasDevGuildMemberRole)) {
+        if (
+          (!hasBoosterRole && !isInATrustedRole && !hasSupporterRole) ||
+            (!hasBoosterRole && !isInATrustedRole && !hasSupporterRole && !hasDevGuildMemberRole)
+        ) {
           await boosterMember.send({ embed: NO_LONGER_SUPPORTER(boosterMember, boosterGuild, devGuild) });
-          await boosterMember.kick(`Removed from the Supporter role in ${boosterGuild}`);
+          await devGuildMember.kick(`Removed from the Supporter role in ${boosterGuild}`);
           console.log(`Successfully kicked ${boosterMember.user.tag} (${boosterMember.id}) from ${devGuild} (${devGuild.id})`);
           return;
         }
 
         // This is for if the member is no longer a booster, but checks if they have the member role or not in the dev server
-        if ((!hasBoosterRole && !isInATrustedRole && hasDevGuildMemberRole) || (!hasBoosterRole && !isInATrustedRole && !hasDevGuildMemberRole)) {
+        if (
+          (!hasBoosterRole && !isInATrustedRole && hasDevGuildMemberRole) ||
+            (!hasBoosterRole && !isInATrustedRole && !hasDevGuildMemberRole)
+        ) {
           const ifMemberExistsInCache = await asyncRedisFunctions(redis).getAsync(REDIS_KEY(boosterMember)).then(d => JSON.parse(d));
           if (ifMemberExistsInCache) {
             await asyncRedisFunctions(redis).delAsync(REDIS_KEY(boosterMember));
@@ -158,26 +166,33 @@ client.on('message', async message => {
           await devGuildMember.kick(`Force update by ${message.author.tag} [${message.author.id}]`);
           console.log(`${updateUser.tag} (${updateUser.id}) removed from ${devGuild} by ${message.author.tag}`);
 
-          return successMessage(message.channel as TextChannel, `**${updateUser.tag}** has been successfully removed from **${devGuild.name}** by **${message.author.tag}** \`[${message.author.id}]\``);
+          return successMessage(message.channel as TextChannel,
+            oneLine`**${updateUser.tag}** has been successfully removed from **${devGuild.name}** by 
+                **${message.author.tag}** \`[${message.author.id}]\``);
         }
 
         // This is for if the member is a booster or supporter, but doesn't have the member role in the dev server
         if ((hasBoosterRole || hasSupporterRole || isInATrustedRole) && !hasDevGuildMemberRole) {
-          await devGuildMember.roles.add(devGuildMemberRole, `Force-update by ${message.author.tag} [${message.author.id}]`);
-          return successMessage(message.channel as TextChannel, `**${updateUser.tag}** has been added to the **${devGuildMemberRole.name}** role in **${devGuild}** by **${message.author.tag}** \`[(${message.author.id})]\``);
+          await devGuildMember.roles.add(devGuildMemberRole,
+            `Force-update by ${message.author.tag} [${message.author.id}]`);
+          return successMessage(message.channel as TextChannel,
+            oneLine`**${updateUser.tag}** has been added to the **${devGuildMemberRole.name}** role in **${devGuild}** 
+                by **${message.author.tag}** \`[(${message.author.id})]\``);
         }
 
         // This is for if the member is a booster or supporter and has the member role in the dev server
         if ((hasBoosterRole || hasSupporterRole || isInATrustedRole) && hasDevGuildMemberRole)
-          return errorMessage(message.channel as TextChannel, `**${updateUser.tag}** is already authorized in **${devGuild.name}**.`);
+          return errorMessage(message.channel as TextChannel,
+            `**${updateUser.tag}** is already authorized in **${devGuild.name}**.`);
       } catch (error) {
         if (error.message === 'Unknown Member')
-          return errorMessage(message.channel as TextChannel, `**${updateUser.tag}** is not a member of **${devGuild.name}**.`);
+          return errorMessage(message.channel as TextChannel,
+            `**${updateUser.tag}** is not a member of **${devGuild.name}**.`);
 
-        if (error.message === 'Cannot send messages to this user') {
-          console.error(error.message);
-          return;
-        }
+        if (error.message === 'Missing Permissions') return errorMessage(message.channel as TextChannel,
+          `Could not kick **${updateUser.tag}** as I am lacking the permissions to do so!`);
+
+        if (error.message === 'Cannot send messages to this user') return;
 
         console.error(error.stack);
         return errorMessage(message.channel as TextChannel, `An error occurred: **${error.message}**`);
