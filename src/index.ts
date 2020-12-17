@@ -102,7 +102,11 @@ client.on('message', async message => {
     // In the event of a bot restart or crash, this command allows to force update the status of a user
     case 'forceupdate': {
       const updateUser = message.mentions.users.first() || (client.users.cache.get(args[0]?.trim() ?? null) ??
-          await client.users.fetch(args[0]?.trim() ?? null));
+          await client.users.fetch(args[0]?.trim() ?? null)
+            .catch(e => {
+              errorMessage(message.channel as TextChannel, e.message);
+              return;
+            }));
 
       if (!updateUser && !args[0]?.trim())
         return errorMessage(message.channel as TextChannel, 'Please provide a user to forcefully update.');
