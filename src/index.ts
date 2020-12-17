@@ -1,4 +1,4 @@
-import { Client, GuildMember, TextChannel } from 'discord.js';
+import { Client, GuildMember, Intents, TextChannel } from 'discord.js';
 import { inspect } from 'util';
 import { createClient } from 'redis';
 import { oneLine, stripIndents } from 'common-tags';
@@ -31,7 +31,7 @@ const redis = createClient({
   port: parseInt(process.env.REDIS_PORT)
 });
 
-const client = new Client({ disableMentions: 'everyone' });
+const client = new Client({ disableMentions: 'everyone', ws: { intents: Intents.ALL} });
 
 client.on('ready', async () => {
   try {
