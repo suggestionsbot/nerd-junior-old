@@ -91,10 +91,11 @@ client.on('message', async message => {
 
         let evaled = eval(code);
         if (typeof evaled !== 'string') evaled = inspect(evaled);
+        const cleaned = await clean(client, evaled);
 
-        await message.channel.send(clean(evaled), { code: 'xl' });
+        await message.channel.send(cleaned, { code: 'xl' });
       } catch (err) {
-        return errorMessage(message.channel as TextChannel, `\`ERROR\` \`\`\`xl\n${clean(err)}\n\`\`\``);
+        return errorMessage(message.channel as TextChannel, `\`ERROR\` \`\`\`xl\n${err}\n\`\`\``);
       }
 
       break;

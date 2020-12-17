@@ -1,5 +1,5 @@
 import { CronJob } from 'cron';
-import { promisify } from 'util';
+import { inspect, promisify } from 'util';
 import { Client, Message, TextChannel } from 'discord.js';
 import { RedisClient } from 'redis';
 import { stripIndents } from 'common-tags';
@@ -17,9 +17,24 @@ export const asyncRedisFunctions = (redis: RedisClient): RedisFunctions => {
 };
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const clean = (text: any): any => {
-  if (typeof (text) === 'string') return text.replace(/`/g, '`' + String.fromCharCode(8203)).replace(/@/g, '@' + String.fromCharCode(8203));
-  else return text;
+export const clean = async (client: Client, text: any): Promise<any> => {
+  if (text && text.constructor.name === 'Promise') text = await text;
+  if (typeof text !== 'string') {
+    text = inspect(text, {
+      depth: 1
+    });
+  }
+
+  text = text
+    .replace(/`/g, '`' + String.fromCharCode(8203))
+    .replace(/@/g, '@' + String.fromCharCode(8203))
+    .replace(client.token, '-REDACTED-')
+    .replace(process.env.DISCORD_TOKEN, '-REDACTED-')
+    .replace(process.env.REDIS_HOSTNAME, '-REDACTED-')
+    .replace(process.env.REDIS_PASSWORD, '-REDACTED-')
+    .replace(process.env.REDIS_PORT, '-REDACTED-');
+
+  return text;
 };
 
 export const errorMessage: StatusMessage = (channel: TextChannel, message: string): Promise<Message> => {
