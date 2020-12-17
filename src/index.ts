@@ -132,7 +132,8 @@ client.on('message', async message => {
           await boosterMember.send({ embed: NO_LONGER_SUPPORTER(boosterMember, boosterGuild, devGuild) });
           await devGuildMember.kick(`Removed from the Supporter role in ${boosterGuild}`);
           console.log(`Successfully kicked ${boosterMember.user.tag} (${boosterMember.id}) from ${devGuild} (${devGuild.id})`);
-          return;
+          return successMessage(message.channel as TextChannel,
+            `Successfully kicked **${boosterMember.user.tag}** (\`${boosterMember.id}\`) from **${devGuild}** (\`${devGuild.id}\`)`);
         }
 
         // This is for if the member is no longer a booster, but checks if they have the member role or not in the dev server
