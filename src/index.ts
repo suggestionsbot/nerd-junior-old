@@ -219,7 +219,7 @@ client.on('guildMemberAdd', async member => {
     if (member.user.bot) return;
     if (isInATrustedRole) return await member.roles.add(DA_NERDS_DEV).catch(console.error);
 
-    if (!hasBoosterRole || !hasSupporterRole) {
+    if (!hasBoosterRole && !hasSupporterRole) {
       if (member.kickable) {
         await member.send({
           embed: {
