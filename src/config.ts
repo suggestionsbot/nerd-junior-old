@@ -62,7 +62,7 @@ export const DEFAULT_TIME = 1000 * 60 * 60 * 24; // 24 hours
 export const CRON_TIMER = '*/1 * * * *';
 
 // Da Nerds, Announcements
-export const AUTO_ROLES = ['603826571429543947', '778798837115519036'];
+export const AUTO_ROLES = ['603826571429543947', '761378994054103040'];
 // User, Role
 export const THOUSANDTH_MEMBER = ['759858044372254720', '778798837115519036'];
 
