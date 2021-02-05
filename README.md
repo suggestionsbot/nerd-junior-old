@@ -2,7 +2,7 @@
 
 [![Join the Discord](https://discordapp.com/api/guilds/601219766258106399/embed.png)](https://discord.gg/ntXkRan)
 
-This bot links Nitro Boosters in the Support server with the Development server for the next major version of the Suggestions bot.
+This is a utility bot that handles specific functions in Suggestions-related Discord servers.
 
 ## Creating A Discord Application & Bot
 You should have a Discord Bot Application ready and made to work on this bot. If you're not sure how to do that, please follow [this guide](https://github.com/acollierr17/create-a-discord-bot).
