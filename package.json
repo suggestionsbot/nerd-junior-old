@@ -1,7 +1,7 @@
 {
-  "name": "boosters",
+  "name": "nerd-junior",
   "version": "1.0.0",
-  "description": "This bot links Nitro Boosters in the Support server with the Development server for the next major version of the Suggestions bot.",
+  "description": "This is a utility bot that handles specific functions in Suggestions-related Discord servers.",
   "main": "dist/lib/index.js",
   "typings": "dist/types/index.d.ts",
   "files": [
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/suggestionsbot/boosters.git"
+    "url": "git+https://github.com/suggestionsbot/nerd-junior.git"
   },
   "author": "acollierr17 <gamemaniac101@gmail.com>",
   "license": "MIT",
@@ -24,9 +24,9 @@
     "node": ">=12.0.0"
   },
   "bugs": {
-    "url": "https://github.com/suggestionsbot/boosters/issues"
+    "url": "https://github.com/suggestionsbot/nerd-junior/issues"
   },
-  "homepage": "https://github.com/suggestionsbot/boosters#readme",
+  "homepage": "https://github.com/suggestionsbot/nerd-junior#readme",
   "devDependencies": {
     "@types/common-tags": "^1.8.0",
     "@types/cron": "^1.7.2",
@@ -44,7 +44,7 @@
     "bufferutil": "^4.0.2",
     "common-tags": "^1.8.0",
     "cron": "^1.8.2",
-    "discord.js": "^12.5.0",
+    "discord.js": "discordjs/discord.js",
     "dotenv-flow": "^3.2.0",
     "erlpack": "^0.1.3",
     "redis": "^3.0.2",

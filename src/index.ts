@@ -22,7 +22,7 @@ import {
   MAIN_GUILD,
   MAIN_GUILD_INVITE, MINIMUM_PERMISSIONS, NO_LONGER_SUPPORTER, OWNER, PERMISSIONS,
   REDIS_KEY, DONATOR_ROLE,
-  TRUSTED_ROLES_MAIN
+  TRUSTED_ROLES_MAIN, AUTO_ROLES, THOUSANDTH_MEMBER
 } from './config';
 
 const redis = createClient({
@@ -31,7 +31,7 @@ const redis = createClient({
   port: parseInt(process.env.REDIS_PORT)
 });
 
-const client = new Client({ disableMentions: 'everyone', ws: { intents: Intents.ALL} });
+const client = new Client({ ws: { intents: Intents.ALL} });
 
 client.on('ready', async () => {
   try {
@@ -260,6 +260,11 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
   const [oldHasBoosterRole, oldHasDonatorRole] = [BOOSTER_ROLE, DONATOR_ROLE]
     .map(id => oldBoosterMember.roles.cache.has(id));
   const isInATrustedRole = newBoosterMember.roles.cache.some(r => TRUSTED_ROLES_MAIN.includes(r.id));
+
+  if (oldBoosterMember.pending && !newBoosterMember.pending) {
+    newBoosterMember.roles.add(AUTO_ROLES);
+    if (newBoosterMember.id === THOUSANDTH_MEMBER[0]) newBoosterMember.roles.add(THOUSANDTH_MEMBER[1]);
+  }
 
   if (isInATrustedRole) return;
   // Delays the code below from executing when a new member joins because it'll try to execute the rest of the code
