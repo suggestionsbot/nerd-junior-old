@@ -1,19 +1,19 @@
-# boosters 
+# nerd-junior 
 
 [![Join the Discord](https://discordapp.com/api/guilds/601219766258106399/embed.png)](https://discord.gg/ntXkRan)
 
-This bot links Nitro Boosters in the Support server with the Development server for the next major version of the Suggestions bot.
+This is a utility bot that handles specific functions in Suggestions-related Discord servers.
 
 ## Creating A Discord Application & Bot
 You should have a Discord Bot Application ready and made to work on this bot. If you're not sure how to do that, please follow [this guide](https://github.com/acollierr17/create-a-discord-bot).
 
-A star is always appreciated and if you wish to contribute, feel free to open an [issue](https://github.com/suggestionsbot/boosters/issues) or [pull request](https://github.com/suggestionsbot/boosters/pulls)
+A star is always appreciated and if you wish to contribute, feel free to open an [issue](https://github.com/suggestionsbot/nerd-junior/issues) or [pull request](https://github.com/suggestionsbot/nerd-junior/pulls)
 
 ## Running Locally
 Make sure you have [Node.js](http://nodejs.org/) installed as well as Git SCM [Windows](https://git-scm.com/download/win) | [Mac](https://git-scm.com/download/mac) | [Linux](https://git-scm.com/download/linux) if you're going to go this route. Otherwise, simply clone the repo or download it and unzip it to a folder on your desktop.
 ```bash
-$ git clone git@github.com:suggestionsbot/boosters.git # or fork
-$ cd boosters
+$ git clone git@github.com:suggestionsbot/nerd-junior.git # or fork
+$ cd nerd-junior
 $ npm install
 ```
 Rename `.env.example` to `.env` and update the file with its respective details. Afterward, start the bot.
@@ -23,7 +23,7 @@ $ npm start
 The bot should now be live! (Check the console if you need to double check anything.
 
 ## Deploying to Heroku
-With the included [`Profile`](https://github.com/suggestionsbot/boosters/blob/master/Procfile) you have the option of deploying the bot to Heroku.
+With the included [`Profile`](https://github.com/suggestionsbot/nerd-junior/blob/master/Procfile) you have the option of deploying the bot to Heroku.
 
 Make sure you have [Heroku CLI](https://cli.heroku.com/) installed before proceeding. You will need to download the Heroku Node.js buildpack first before moving along.
 ```bash
