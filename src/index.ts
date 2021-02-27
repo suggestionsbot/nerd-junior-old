@@ -36,7 +36,7 @@ const client = new Client({ ws: { intents: Intents.ALL} });
 client.on('ready', async () => {
   try {
     console.log(`Logged in as ${client.user.tag} (${client.user.id})!`);
-    await client.user.setActivity('the boosters', { type: 'WATCHING' });
+    await client.user.setActivity('da nerds', { type: 'WATCHING' });
     client.pendingRemovals = new Map<string, MemberData>();
     await queueAllPendingRemovals(redis, client);
     boosterExpirationJob(redis, client).start();
