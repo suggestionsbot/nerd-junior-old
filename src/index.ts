@@ -261,7 +261,7 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
     .map(id => oldBoosterMember.roles.cache.has(id));
   const isInATrustedRole = newBoosterMember.roles.cache.some(r => TRUSTED_ROLES_MAIN.includes(r.id));
 
-  if (oldBoosterMember.pending && !newBoosterMember.pending) {
+  if (!newBoosterMember.pending) {
     newBoosterMember.roles.add(AUTO_ROLES);
     if (newBoosterMember.id === THOUSANDTH_MEMBER[0]) newBoosterMember.roles.add(THOUSANDTH_MEMBER[1]);
   }
