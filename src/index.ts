@@ -31,7 +31,7 @@ const redis = createClient({
   port: parseInt(process.env.REDIS_PORT)
 });
 
-const client = new Client({ ws: { intents: Intents.ALL} });
+const client = new Client({ ws: { intents: Intents.ALL}, partials: ["GUILD_MEMBER"] });
 
 client.on('ready', async () => {
   try {
@@ -261,7 +261,7 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
     .map(id => oldBoosterMember.roles.cache.has(id));
   const isInATrustedRole = newBoosterMember.roles.cache.some(r => TRUSTED_ROLES_MAIN.includes(r.id));
 
-  if (!newBoosterMember.pending) {
+  if (oldBoosterMember.pending && !newBoosterMember.pending) {
     newBoosterMember.roles.add(AUTO_ROLES);
     if (newBoosterMember.id === THOUSANDTH_MEMBER[0]) newBoosterMember.roles.add(THOUSANDTH_MEMBER[1]);
   }
