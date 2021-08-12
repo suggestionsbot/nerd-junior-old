@@ -29,7 +29,7 @@
   "homepage": "https://github.com/suggestionsbot/nerd-junior#readme",
   "devDependencies": {
     "@types/common-tags": "1.8.0",
-    "@types/cron": "1.7.2",
+    "@types/cron": "1.7.3",
     "@types/dotenv-flow": "3.1.0",
     "@types/node": "14.14.9",
     "@types/redis": "2.8.28",
