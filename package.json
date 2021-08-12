@@ -12,27 +12,26 @@
     "start": "yarn run build && node dist/lib/index.js",
     "build": "rimraf dist && tsc",
     "lint": "eslint ./src --ext .ts",
-    "lint:fix": "eslint --fix ./src --ext .ts"
+    "lint:fix": "eslint --fix ./src --ext .ts",
+    "slash-commands:register": "node dist/lib/register-slash-commands.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/suggestionsbot/nerd-junior.git"
   },
-  "author": "acollierr17 <gamemaniac101@gmail.com>",
+  "author": "Anthony Collier <hello@acollier.dev>",
   "license": "MIT",
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=14.x.x",
+    "npm": "please-use-yarn",
+    "yarn": ">=1.17.3"
   },
   "bugs": {
     "url": "https://github.com/suggestionsbot/nerd-junior/issues"
   },
   "homepage": "https://github.com/suggestionsbot/nerd-junior#readme",
   "devDependencies": {
-    "@types/common-tags": "1.8.1",
-    "@types/cron": "1.7.3",
-    "@types/dotenv-flow": "3.1.0",
     "@types/node": "14.14.9",
-    "@types/redis": "2.8.31",
     "@types/ws": "7.4.7",
     "@typescript-eslint/eslint-plugin": "4.8.2",
     "@typescript-eslint/parser": "4.8.2",
@@ -41,13 +40,14 @@
     "typescript": "4.3.5"
   },
   "dependencies": {
+    "@discordjs/builders": "^0.5.0",
+    "@discordjs/rest": "^0.1.0-canary.0",
     "bufferutil": "^4.0.2",
-    "common-tags": "^1.8.0",
-    "cron": "^1.8.2",
-    "discord.js": "discordjs/discord.js",
-    "dotenv-flow": "^3.2.0",
-    "erlpack": "^0.1.3",
-    "redis": "^3.0.2",
+    "discord-api-types": "^0.22.0",
+    "discord.js": "^13.0.1",
+    "dotenv": "^10.0.0",
+    "erlpack": "discord/erlpack",
+    "utf-8-validate": "^5.0.5",
     "zlib-sync": "^0.1.7"
   }
 }

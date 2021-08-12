@@ -1,20 +1,20 @@
-import { Message, TextChannel } from 'discord.js';
+import { Client, Collection, CommandInteraction } from 'discord.js';
+import { SlashCommandBuilder } from '@discordjs/builders';
 
 declare module 'discord.js' {
   interface Client {
-    pendingRemovals: Map<string, MemberData|undefined>;
+    commands: Collection<string, Command>;
+    events: Collection<string, Listener>;
   }
 }
 
-export interface RedisFunctions {
-  getAsync(key: string):  Promise<string|null>;
-  delAsync(key: string): Promise<number>;
-  setAsync(key: string, value: string): Promise<unknown>;
-  keysAsync(pattern: string): Promise<Array<string>>;
+export interface Listener {
+  name: string;
+  type?: 'on' | 'once';
+  execute(client: Client, ...args: Array<any>): any;
 }
 
-export interface MemberData {
-  expires: number;
+export interface Command {
+  data: SlashCommandBuilder;
+  execute(interaction: CommandInteraction): any;
 }
-
-export type StatusMessage = (channel: TextChannel, message: string) => Promise<Message>;

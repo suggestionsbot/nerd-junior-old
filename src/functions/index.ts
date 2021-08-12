@@ -1,119 +1,46 @@
-import { CronJob } from 'cron';
-import { inspect, promisify } from 'util';
-import { Client, Message, TextChannel } from 'discord.js';
-import { RedisClient } from 'redis';
-import { stripIndents } from 'common-tags';
+import { Client } from 'discord.js';
+import { APIApplicationCommandOption } from 'discord-api-types';
+import path from 'path';
+import { lstatSync, readdirSync } from 'fs';
 
-import { COLORS, CRON_TIMER, DEV_GUILD, MAIN_GUILD, MAIN_GUILD_INVITE, REDIS_KEY } from '../config';
-import { MemberData, RedisFunctions, StatusMessage } from '../types';
+import { Command, Listener } from '../types';
 
-export const asyncRedisFunctions = (redis: RedisClient): RedisFunctions => {
-  return {
-    getAsync: promisify(redis.get).bind(redis),
-    delAsync: promisify(redis.del).bind(redis),
-    setAsync: promisify(redis.set).bind(redis),
-    keysAsync: promisify(redis.keys).bind(redis)
+export const walk = (directory: string, extensions: Array<string>): Array<string> => {
+  const read = (dir: string, files: Array<string> = []): Array<string> => {
+    for (const file of readdirSync(dir)) {
+      const filePath = path.join(dir, file), stats = lstatSync(filePath);
+      if (stats.isFile() && extensions.some(ext => filePath.endsWith(ext))) files.push(filePath);
+      else if (stats.isDirectory()) files = files.concat(read(filePath));
+    }
+
+    return files;
   };
+
+  return read(directory);
 };
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export const clean = async (client: Client, text: any): Promise<any> => {
-  if (text && text.constructor.name === 'Promise') text = await text;
-  if (typeof text !== 'string') {
-    text = inspect(text, {
-      depth: 1
-    });
+export const loadListeners = async (client: Client): Promise<void> => {
+  const files = walk(`${path.join(path.dirname(require.main.filename), 'listeners')}`, ['.js', '.ts']);
+  if (!files.length) throw 'Could not load listener files!';
+
+  for (const file of files) {
+    const listener = await import(file).then(({ listener }) => listener as Listener);
+    client[listener?.type ?? 'on'](listener.name, (...args: Array<any>) => listener.execute(client, ...args));
+    delete require.cache[require.resolve(file)];
   }
-
-  text = text
-    .replace(/`/g, '`' + String.fromCharCode(8203))
-    .replace(/@/g, '@' + String.fromCharCode(8203))
-    .replace(client.token, '-REDACTED-')
-    .replace(process.env.DISCORD_TOKEN, '-REDACTED-')
-    .replace(process.env.REDIS_HOSTNAME, '-REDACTED-')
-    .replace(process.env.REDIS_PASSWORD, '-REDACTED-')
-    .replace(process.env.REDIS_PORT, '-REDACTED-');
-
-  return text;
 };
 
-export const errorMessage: StatusMessage = (channel: TextChannel, message: string): Promise<Message> => {
-  return channel.send({
-    embed: {
-      description: stripIndents`<:nerdError:605265598343020545> ${message}`,
-      color: COLORS.ERROR
-    }
-  });
-};
+export const loadCommands = async (
+  client?: Client,
+  commands?: Array<{name: string, description: string, options: Array<APIApplicationCommandOption>}>
+): Promise<void> => {
+  const files = walk(`${path.join(path.dirname(require.main.filename), 'commands')}`, ['.js', '.ts']);
+  if (!files.length) throw 'Could not load command files!';
 
-export const successMessage: StatusMessage = (channel: TextChannel, message: string): Promise<Message> => {
-  return channel.send({
-    embed: {
-      description: stripIndents`<:nerdSuccess:605265580416565269> ${message}`,
-      color: COLORS.SUCCESS
-    }
-  });
-};
-
-export const boosterExpirationJob = (redis: RedisClient, client: Client): CronJob => {
-  console.log('Starting booster expiration job...');
-  return new CronJob(CRON_TIMER, async () => {
-    const [mainGuild, devGuild] = [MAIN_GUILD, DEV_GUILD].map(g => client.guilds.cache.get(g));
-    if (client.pendingRemovals.size > 0) {
-      for (const id of client.pendingRemovals.keys()) {
-        try {
-          const member = await devGuild.members.fetch(id);
-          await member.send({
-            embed: {
-              author: {
-                name: member.user.tag,
-                url: member.user.avatarURL()
-              },
-              description: stripIndents`
-              You have been kicked from **${devGuild}** \`[${devGuild.id}]\` due to your Nitro Boost expiring in **${mainGuild}** \`[${mainGuild.id}]\`.
-              
-              You are free to renew your boost in **${mainGuild}** at anytime to regain access to your benefits including access to the **${devGuild}** guild!
-              **Invite:** ${MAIN_GUILD_INVITE}
-              
-              (If you believe this is a mistake, please contact a member of the support team)
-            `,
-              color: COLORS.MAIN,
-              footer: { text: `ID: ${member.id}` },
-              timestamp: new Date()
-            }
-          });
-          await member.kick(`Nitro Boost expired in ${mainGuild}`);
-          await asyncRedisFunctions(redis).delAsync(REDIS_KEY(member));
-          console.log(`Successfully kicked ${member.user.tag} (${member.id}) from ${devGuild} (${devGuild.id})`);
-        } catch (e) {
-          if (e.message === 'Unknown Member') {
-            await asyncRedisFunctions(redis).delAsync(REDIS_KEY(id));
-            return;
-          }
-          return console.error(e);
-        }
-      }
-    }
-  }, null, true, 'America/New_York');
-};
-
-export const queueAllPendingRemovals = async (redis: RedisClient, client: Client): Promise<void> => {
-  try {
-    console.log('Queueing all pending member removals from cache...');
-    const allCachedRemovals = await asyncRedisFunctions(redis).keysAsync('boosters:*');
-    if (allCachedRemovals.length > 0) {
-      const members = allCachedRemovals.map(key => key.split(':')[1]);
-      for (const key of members) {
-        const data = await asyncRedisFunctions(redis).getAsync(REDIS_KEY(key)).then(d => {
-          if (d) return JSON.parse(d) as MemberData;
-        });
-        client.pendingRemovals.set(key, data);
-      }
-      console.log(`"${client.pendingRemovals.size}" member(s) set to be kicked from the development server...`);
-    } else {
-      console.log('No pending removals in the cache...');
-    }
-  } catch (e) {
-    return console.error(e);
+  for (const file of files) {
+    const command = await import(file).then(({ command }) => command as Command);
+    if (client) client.commands.set(command.data.name, command);
+    else commands.push(command.data.toJSON());
+    delete require.cache[require.resolve(file)];
   }
 };
