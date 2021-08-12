@@ -13,7 +13,7 @@
     "build": "rimraf dist && tsc",
     "lint": "eslint ./src --ext .ts",
     "lint:fix": "eslint --fix ./src --ext .ts",
-    "slash-commands:register": "node dist/lib/register-slash-commands.js"
+    "application-commands:register": "node dist/lib/register-application-commands.js"
   },
   "repository": {
     "type": "git",
