@@ -18,10 +18,10 @@
     "type": "git",
     "url": "git+https://github.com/suggestionsbot/nerd-junior.git"
   },
-  "author": "acollierr17 <gamemaniac101@gmail.com>",
+  "author": "acollierr17 <hello@acollier.dev>",
   "license": "MIT",
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=14.0.0"
   },
   "bugs": {
     "url": "https://github.com/suggestionsbot/nerd-junior/issues"
