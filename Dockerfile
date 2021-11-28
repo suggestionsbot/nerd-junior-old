@@ -1,4 +1,4 @@
-FROM node:16.3.0
+FROM node:17.1.0
 
 #Update container and install packages
 RUN ["apt-get", "update"]
