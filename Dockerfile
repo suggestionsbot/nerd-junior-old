@@ -27,4 +27,4 @@ COPY --from=builder /tmp/node_modules node_modules
 # copy remaining files
 COPY . .
 
-CMD ["yarn", "start"]
+CMD ["yarn", "start:linux"]
