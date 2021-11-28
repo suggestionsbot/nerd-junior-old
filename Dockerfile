@@ -35,4 +35,4 @@ COPY --from=builder /tmp/node_modules node_modules
 COPY --from=builder /opt/nerd-junior/dist dist
 COPY package.json .
 
-CMD ["yarn", "start:linux"]
+CMD ["yarn", "start"]
