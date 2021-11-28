@@ -15,7 +15,8 @@
     "declarationDir": "dist/types",
     "outDir": "dist/lib",
     "noEmitOnError": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipDefaultLibCheck": true
   },
   "include": [
     "src"
