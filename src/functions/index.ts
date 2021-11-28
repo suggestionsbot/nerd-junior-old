@@ -1,13 +1,12 @@
 import { CronJob } from 'cron';
 import { inspect, promisify } from 'util';
 import { Client, Message, TextChannel } from 'discord.js';
-import { RedisClient } from 'redis';
 import { stripIndents } from 'common-tags';
 
 import { COLORS, CRON_TIMER, DEV_GUILD, MAIN_GUILD, MAIN_GUILD_INVITE, REDIS_KEY } from '../config';
 import { MemberData, RedisFunctions, StatusMessage } from '../types';
 
-export const asyncRedisFunctions = (redis: RedisClient): RedisFunctions => {
+export const asyncRedisFunctions = (redis: any): RedisFunctions => {
   return {
     getAsync: promisify(redis.get).bind(redis),
     delAsync: promisify(redis.del).bind(redis),
@@ -55,7 +54,7 @@ export const successMessage: StatusMessage = (channel: TextChannel, message: str
   });
 };
 
-export const boosterExpirationJob = (redis: RedisClient, client: Client): CronJob => {
+export const boosterExpirationJob = (redis: any, client: Client): CronJob => {
   console.log('Starting booster expiration job...');
   return new CronJob(CRON_TIMER, async () => {
     const [mainGuild, devGuild] = [MAIN_GUILD, DEV_GUILD].map(g => client.guilds.cache.get(g));
@@ -97,7 +96,7 @@ export const boosterExpirationJob = (redis: RedisClient, client: Client): CronJo
   }, null, true, 'America/New_York');
 };
 
-export const queueAllPendingRemovals = async (redis: RedisClient, client: Client): Promise<void> => {
+export const queueAllPendingRemovals = async (redis: any, client: Client): Promise<void> => {
   try {
     console.log('Queueing all pending member removals from cache...');
     const allCachedRemovals = await asyncRedisFunctions(redis).keysAsync('boosters:*');
