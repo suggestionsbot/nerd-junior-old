@@ -25,7 +25,7 @@ import {
   TRUSTED_ROLES_MAIN, AUTO_ROLES, THOUSANDTH_MEMBER
 } from './config';
 
-const redis = createClient();
+const redis = createClient({ url: process.env.REDIS_URI });
 
 const client = new Client({ intents: new Intents(14023), partials: ['GUILD_MEMBER'] });
 
