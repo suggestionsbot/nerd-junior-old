@@ -1,20 +1,30 @@
-FROM node:17.1.0
+FROM nikolaik/python-nodejs:python3.9-nodejs14-alpine  AS base
 
-#Update container and install packages
-RUN ["apt-get", "update"]
-RUN ["apt-get", "install", "-y", "vim-tiny", "apt-utils"]
+# create working directory for bot
+WORKDIR /opt/nerd-junior
 
-#Create the directory
-WORKDIR /usr/src/boosters
+### dependencies & builder
+FROM base AS builder
 
-#Copy package.json
-COPY package.json ./
+# install make
+RUN apk add g++ make
 
-#Install from packaage.json
-RUN npm install
+# install production dependencies
+COPY package.json yarn.lock ./
 
-#Copy remaining files
+RUN yarn install --production --pure-lockfile
+RUN cp -RL node_modules /tmp/node_modules
+
+# install all dependencies
+RUN yarn install --pure-lockfile
+
+### runner
+FROM base
+
+# copy runtime dependencies
+COPY --from=builder /tmp/node_modules node_modules
+
+# copy remaining files
 COPY . .
 
-#Build and start the bot!
-CMD ["npm", "run", "start"]
+CMD ["yarn", "start"]
