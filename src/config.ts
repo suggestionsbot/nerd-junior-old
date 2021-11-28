@@ -46,7 +46,7 @@ export const MAIN_GUILD_INVITE = 'https://discord.gg/ntXkRan';
 export const REDIS_KEY = (member: GuildMember|PartialGuildMember|string): string => {
   return `boosters:${typeof member === 'object' ? member.id : member}`;
 };
-export const MINIMUM_PERMISSIONS = 268520450;
+export const MINIMUM_PERMISSIONS = BigInt(268520450);
 
 export const MAIN_GUILD = '601219766258106399'; // Suggestions
 export const DEV_GUILD = '737166408525283348'; // Suggestions Development
