@@ -15,6 +15,6 @@ jobs:
           with:
             username: ${{ github.actor }}
             password: ${{ github.token }}
-            registry: docker.pkg.github.com
+            registry: ghcr.io
             tags: latest
             build_args: BRANCH=${{ github.ref }},COMMIT=${{ github.sha }}
