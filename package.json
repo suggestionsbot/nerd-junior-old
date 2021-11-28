@@ -9,8 +9,7 @@
   ],
   "scripts": {
     "dev": "nodemon src/index.ts",
-    "start:win": "yarn run build:win && node dist/lib/index.js",
-    "start:linux": "yarn run build:linux && node dist/lib/index.js",
+    "start": "node dist/lib/index.js",
     "build:win": "rimraf dist && tsc",
     "build:linux": "rm -rf dist && tsc",
     "lint": "eslint ./src --ext .ts",
@@ -23,7 +22,7 @@
   "author": "acollierr17 <hello@acollier.dev>",
   "license": "MIT",
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=16.0.0"
   },
   "bugs": {
     "url": "https://github.com/suggestionsbot/nerd-junior/issues"
@@ -46,9 +45,9 @@
     "bufferutil": "^4.0.2",
     "common-tags": "^1.8.0",
     "cron": "^1.8.2",
-    "discord.js": "discordjs/discord.js",
+    "discord.js": "^13.3.1",
     "dotenv-flow": "^3.2.0",
-    "erlpack": "^0.1.3",
+    "erlpack": "discord/erlpack",
     "redis": "^4.0.0",
     "zlib-sync": "^0.1.7"
   }
