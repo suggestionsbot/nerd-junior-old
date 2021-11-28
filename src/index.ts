@@ -1,4 +1,4 @@
-import { Client, GuildMember, Intents, TextChannel } from 'discord.js';
+import { Client, GuildMember, TextChannel } from 'discord.js';
 import { inspect } from 'util';
 import { createClient } from 'redis';
 import { oneLine, stripIndents } from 'common-tags';
@@ -25,17 +25,15 @@ import {
   TRUSTED_ROLES_MAIN, AUTO_ROLES, THOUSANDTH_MEMBER
 } from './config';
 
-const redis = createClient({
-  host: process.env.REDIS_HOSTNAME,
-  password: process.env.REDIS_PASSWORD,
-  port: parseInt(process.env.REDIS_PORT)
-});
+const redis = createClient();
 
-const client = new Client({ ws: { intents: Intents.ALL}, partials: ["GUILD_MEMBER"] });
+const client = new Client({ intents: 14023, partials: ['GUILD_MEMBER'] });
 
 client.on('ready', async () => {
   try {
     console.log(`Logged in as ${client.user.tag} (${client.user.id})!`);
+    await redis.connect();
+
     await client.user.setActivity('da nerds', { type: 'WATCHING' });
     client.pendingRemovals = new Map<string, MemberData>();
     await queueAllPendingRemovals(redis, client);
@@ -280,7 +278,7 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
             url: newBoosterMember.user.avatarURL()
           },
           description: stripIndents`
-            You no longer have the Nitro Booster role in **${boosterGuild}**. ${await devGuild.members.cache.has(oldMember.id) ? `You will be removed from **${devGuild}**` : 'You will lose your benefits'} in **24 hours** if you don't re-boost in **${boosterGuild}**.
+            You no longer have the Nitro Booster role in **${boosterGuild}**. ${devGuild.members.cache.has(oldMember.id) ? `You will be removed from **${devGuild}**` : 'You will lose your benefits'} in **24 hours** if you don't re-boost in **${boosterGuild}**.
           
             (If you believe this is a mistake, please contact a member of the support team)
           `,
