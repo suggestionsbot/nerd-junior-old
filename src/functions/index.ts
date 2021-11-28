@@ -38,19 +38,19 @@ export const clean = async (client: Client, text: any): Promise<any> => {
 
 export const errorMessage: StatusMessage = (channel: TextChannel, message: string): Promise<Message> => {
   return channel.send({
-    embed: {
+    embeds: [{
       description: stripIndents`<:nerdError:605265598343020545> ${message}`,
       color: COLORS.ERROR
-    }
+    }]
   });
 };
 
 export const successMessage: StatusMessage = (channel: TextChannel, message: string): Promise<Message> => {
   return channel.send({
-    embed: {
+    embeds: [{
       description: stripIndents`<:nerdSuccess:605265580416565269> ${message}`,
       color: COLORS.SUCCESS
-    }
+    }]
   });
 };
 
@@ -63,7 +63,7 @@ export const boosterExpirationJob = (redis: any, client: Client): CronJob => {
         try {
           const member = await devGuild.members.fetch(id);
           await member.send({
-            embed: {
+            embeds: [{
               author: {
                 name: member.user.tag,
                 url: member.user.avatarURL()
@@ -79,7 +79,7 @@ export const boosterExpirationJob = (redis: any, client: Client): CronJob => {
               color: COLORS.MAIN,
               footer: { text: `ID: ${member.id}` },
               timestamp: new Date()
-            }
+            }]
           });
           await member.kick(`Nitro Boost expired in ${mainGuild}`);
           await asyncRedisFunctions(redis).delAsync(REDIS_KEY(member));

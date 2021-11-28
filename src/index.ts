@@ -1,4 +1,4 @@
-import { Client, GuildMember, TextChannel } from 'discord.js';
+import { Client, GuildMember, TextChannel, Intents, Formatters } from 'discord.js';
 import { inspect } from 'util';
 import { createClient } from 'redis';
 import { oneLine, stripIndents } from 'common-tags';
@@ -27,7 +27,7 @@ import {
 
 const redis = createClient();
 
-const client = new Client({ intents: 14023, partials: ['GUILD_MEMBER'] });
+const client = new Client({ intents: new Intents(14023), partials: ['GUILD_MEMBER'] });
 
 client.on('ready', async () => {
   try {
@@ -43,7 +43,7 @@ client.on('ready', async () => {
   }
 });
 
-client.on('message', async message => {
+client.on('messageCreate', async (message): Promise<any> => {
   if (!message.guild) return;
   if (message.author.id !== OWNER) return;
 
@@ -91,7 +91,7 @@ client.on('message', async message => {
         if (typeof evaled !== 'string') evaled = inspect(evaled);
         const cleaned = await clean(client, evaled);
 
-        await message.channel.send(cleaned, { code: 'xl' });
+        await message.channel.send(Formatters.codeBlock('xl', cleaned));
       } catch (err) {
         return errorMessage(message.channel as TextChannel, `\`ERROR\` \`\`\`xl\n${err}\n\`\`\``);
       }
@@ -148,7 +148,7 @@ client.on('message', async message => {
           }
 
           await boosterMember.send({
-            embed: {
+            embeds: [{
               author: {
                 name: boosterMember.user.tag,
                 url: boosterMember.user.avatarURL()
@@ -165,7 +165,7 @@ client.on('message', async message => {
               color: COLORS.MAIN,
               footer: { text: `This was a force-update by ${message.author.tag}` },
               timestamp: new Date()
-            }
+            }]
           });
 
           await devGuildMember.kick(`Force update by ${message.author.tag} [${message.author.id}]`);
@@ -206,7 +206,7 @@ client.on('message', async message => {
   }
 });
 
-client.on('guildMemberAdd', async member => {
+client.on('guildMemberAdd', async (member): Promise<any> => {
   try {
     const boosterGuild = client.guilds.cache.get(MAIN_GUILD);
     const boosterMember = boosterGuild.members.cache.get(member.id) ?? await boosterGuild.members.fetch(member.id);
@@ -221,7 +221,7 @@ client.on('guildMemberAdd', async member => {
     if (!hasBoosterRole && !hasDonatorRole) {
       if (member.kickable) {
         await member.send({
-          embed: {
+          embeds: [{
             author: {
               name: member.user.tag,
               url: member.user.avatarURL()
@@ -236,7 +236,7 @@ client.on('guildMemberAdd', async member => {
             color: COLORS.MAIN,
             footer: { text: `ID: ${member.id}` },
             timestamp: new Date()
-          }
+          }]
         });
         await member.kick(`Not a Nitro Booster, Supporter or trusted member in ${boosterGuild}`);
         return;
@@ -272,7 +272,7 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
   if (oldHasBoosterRole && !newHasBoosterRole) {
     try {
       await newBoosterMember.send({
-        embed: {
+        embeds: [{
           author: {
             name: newBoosterMember.user.tag,
             url: newBoosterMember.user.avatarURL()
@@ -285,7 +285,7 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
           color: COLORS.MAIN,
           footer: { text: `ID: ${newBoosterMember.id}` },
           timestamp: new Date()
-        }
+        }]
       });
 
       const data: MemberData = { expires: Date.now() + DEFAULT_TIME };
@@ -298,7 +298,7 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
 
   if (!oldHasBoosterRole && newHasBoosterRole) {
     await newBoosterMember.send({
-      embed: {
+      embeds: [{
         author: {
           name: newBoosterMember.user.tag,
           url: newBoosterMember.user.avatarURL()
@@ -311,7 +311,7 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
         color: COLORS.MAIN,
         footer: { text: `ID: ${newBoosterMember.id}` },
         timestamp: new Date()
-      }
+      }]
     });
 
     await asyncRedisFunctions(redis).delAsync(REDIS_KEY(newBoosterMember));
@@ -320,7 +320,7 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
 
   if (oldHasDonatorRole && !newHasDonatorRole && !oldHasBoosterRole && !newHasBoosterRole) {
     try {
-      await newBoosterMember.send({ embed: NO_LONGER_SUPPORTER(newBoosterMember, boosterGuild, devGuild) });
+      await newBoosterMember.send({ embeds: [NO_LONGER_SUPPORTER(newBoosterMember, boosterGuild, devGuild)] });
       await newBoosterMember.kick(`Removed from the Supporter role in ${boosterGuild}`);
       console.log(`Successfully kicked ${newBoosterMember.user.tag} (${newBoosterMember.id}) from ${devGuild} (${devGuild.id})`);
     } catch (error) {

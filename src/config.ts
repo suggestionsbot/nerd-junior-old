@@ -1,4 +1,4 @@
-import { Guild, GuildMember, PartialGuildMember } from 'discord.js';
+import { Guild, GuildMember, HexColorString, PartialGuildMember } from 'discord.js';
 import { stripIndents } from 'common-tags';
 
 export const PERMISSIONS = {
@@ -35,7 +35,7 @@ export const PERMISSIONS = {
   'MANAGE_EMOJIS': 'Mange Emojis'
 };
 
-export const COLORS = {
+export const COLORS: Record<string, HexColorString> = {
   MAIN: '#dd9323',
   SUCCESS: '#00e640',
   ERROR: '#cf000f'
