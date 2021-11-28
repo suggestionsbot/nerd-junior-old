@@ -9,8 +9,8 @@
   ],
   "scripts": {
     "dev": "nodemon src/index.ts",
-    "start:win": "yarn run build:dev && node dist/lib/index.js",
-    "start:linux": "yarn run build:prod && node dist/lib/index.js",
+    "start:win": "yarn run build:win && node dist/lib/index.js",
+    "start:linux": "yarn run build:linux && node dist/lib/index.js",
     "build:win": "rimraf dist && tsc",
     "build:linux": "rm -rf dist && tsc",
     "lint": "eslint ./src --ext .ts",
