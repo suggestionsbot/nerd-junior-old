@@ -33,7 +33,7 @@
     "@types/cron": "1.7.3",
     "@types/dotenv-flow": "3.2.0",
     "@types/node": "16.11.10",
-    "@types/redis": "2.8.32",
+    "@types/redis": "4.0.10",
     "@types/ws": "8.2.0",
     "@typescript-eslint/eslint-plugin": "5.4.0",
     "@typescript-eslint/parser": "5.4.0",
