@@ -45,7 +45,7 @@
     "bufferutil": "^4.0.2",
     "common-tags": "^1.8.0",
     "cron": "^1.8.2",
-    "discord.js": "^13.3.1",
+    "discord.js": "^14.0.0",
     "dotenv-flow": "^3.2.0",
     "erlpack": "discord/erlpack",
     "redis": "^4.0.0",
